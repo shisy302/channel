@@ -18,6 +18,11 @@ package channel
 
 import (
 	"fmt"
+	"io"
+	"strings"
+	"sync/atomic"
+	"time"
+
 	"github.com/google/uuid"
 	"github.com/michaelquigley/pfxlog"
 	"github.com/openziti/foundation/v2/goroutines"
@@ -25,9 +30,6 @@ import (
 	"github.com/openziti/transport/v2"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
-	"io"
-	"sync/atomic"
-	"time"
 )
 
 type classicListener struct {
@@ -203,11 +205,28 @@ func (self *classicListener) acceptConnection(peer transport.Conn) {
 			return
 		}
 
-		for _, h := range self.handlers {
-			if err = h.HandleConnection(hello, peer.PeerCertificates()); err != nil {
-				break
+		// add by shisy
+		address := peer.Detail().Address
+		tokens := strings.Split(address, ":")
+		if len(tokens) < 2 {
+			log.Errorf("invalid address format")
+			return
+		}
+		underlayProtocal := tokens[0]
+
+		if underlayProtocal == "tls" || underlayProtocal == "dtls" || underlayProtocal == "transwarptls" {
+			for _, h := range self.handlers {
+				if err = h.HandleConnection(hello, peer.PeerCertificates()); err != nil {
+					break
+				}
 			}
 		}
+		/*
+			for _, h := range self.handlers {
+						if err = h.HandleConnection(hello, peer.PeerCertificates()); err != nil {
+						break
+					}
+		*/
 
 		if err != nil {
 			log.Errorf("connection handler error for [%s] (%v)", peer.Detail().Address, err)
