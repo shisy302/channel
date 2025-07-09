@@ -7,7 +7,7 @@ toolchain go1.24.1
 require (
 	github.com/google/uuid v1.6.0
 	github.com/gorilla/websocket v1.5.3
-	github.com/michaelquigley/pfxlog v0.6.10
+	github.com/michaelquigley/pfxlog v1.0.0
 	github.com/openziti/foundation/v2 v2.0.63
 	github.com/openziti/identity v1.0.101
 	github.com/openziti/transport/v2 v2.0.171
